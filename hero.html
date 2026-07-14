@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ArteDiStrada — Built From Nothing</title>
+
+<!-- Brand fonts (same family as the rest of the site) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+  /* ============ TOKENS (match the main site) ============ */
+  :root{
+    --ink:#0a0a0b;
+    --panel:#0f0f12;
+    --bone:#f4f1ea;
+    --acid:#7fff00;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--ink);color:var(--bone);}
+  body{font-family:'Space Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+  a{color:inherit;text-decoration:none;}
+  img,video{display:block;max-width:100%;}
+
+  .font-display{font-family:'Archivo Black',system-ui,sans-serif;letter-spacing:-.04em;}
+  .font-mono{font-family:'JetBrains Mono',ui-monospace,monospace;}
+
+  /* ============ STAGE ============ */
+  .hero{
+    position:relative;
+    min-height:100svh;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+
+  /* Ambient wash background */
+  @keyframes ambient{
+    0%,100%{background-position:20% 30%,80% 70%,center;}
+    50%{background-position:28% 22%,72% 78%,center;}
+  }
+  .ambient{
+    background:
+      radial-gradient(ellipse 55% 50% at 20% 30%, rgba(127,255,0,.06), transparent 60%),
+      radial-gradient(ellipse 55% 50% at 80% 70%, rgba(120,140,160,.09), transparent 60%),
+      radial-gradient(ellipse at center, #14141a 0%, #0a0a0b 70%, #050506 100%);
+    background-size:200% 200%,200% 200%,100% 100%;
+    animation:ambient 22s ease-in-out infinite;
+  }
+
+  .layer{position:absolute;inset:0;pointer-events:none;}
+  .grain{
+    background-image:
+      radial-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
+      radial-gradient(rgba(255,255,255,.025) 1px, transparent 1px);
+    background-size:3px 3px,7px 7px;
+    background-position:0 0,1px 2px;
+    z-index:2;opacity:.5;
+  }
+  .beam{
+    height:55%;top:0;
+    background:radial-gradient(ellipse 70% 100% at 50% -20%, rgba(255,255,255,.10), transparent 55%);
+    z-index:1;
+  }
+  .vignette{
+    background:radial-gradient(ellipse at center, transparent 52%, rgba(0,0,0,.72) 100%);
+    z-index:3;
+  }
+  #dust-field{z-index:1;}
+  @keyframes drift{
+    0%{transform:translate3d(0,0,0);opacity:0;}
+    12%{opacity:.5;}
+    100%{transform:translate3d(var(--dx),-110vh,0);opacity:0;}
+  }
+  .dust{position:absolute;border-radius:50%;background:#fff;filter:blur(.4px);
+    animation:drift var(--dur,18s) linear infinite;animation-delay:var(--delay,0s);}
+
+  /* ============ TOP META BAR ============ */
+  .meta{
+    position:relative;z-index:20;
+    display:flex;align-items:center;justify-content:space-between;
+    gap:1rem;flex-wrap:wrap;
+    padding:1.4rem clamp(1.25rem,4vw,2.75rem);
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;text-transform:uppercase;letter-spacing:.3em;
+    color:rgba(244,241,234,.45);
+  }
+  .meta .l,.meta .r{display:flex;align-items:center;gap:1.4rem;}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--acid);}
+  @keyframes blink{50%{opacity:.25;}}
+  .dot{animation:blink 1.6s ease-in-out infinite;}
+  .sep{color:rgba(244,241,234,.25);}
+  @keyframes flicker{0%,100%{opacity:1;}96%{opacity:.7;}}
+  .flicker{animation:flicker 4s ease-in-out infinite;}
+  @media(max-width:720px){ .meta .r{display:none;} }
+
+  /* ============ CENTER CONTENT ============ */
+  .content{
+    position:relative;z-index:15;
+    flex:1;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;
+    padding:1rem clamp(1.25rem,4vw,2.75rem) 2rem;
+    gap:clamp(.5rem,2vw,1.1rem);
+  }
+
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:.75rem;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;text-transform:uppercase;letter-spacing:.3em;
+    color:rgba(244,241,234,.55);
+  }
+  .eyebrow .bar{width:2rem;height:1px;background:var(--acid);}
+
+  /* --- The living mark (logo loop video) --- */
+  .mark{
+    position:relative;
+    width:clamp(230px,36vw,440px);
+    aspect-ratio:1/1;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .mark::before{ /* acid halo — also the fallback focal point if the video is slow to paint */
+    content:"";position:absolute;inset:4%;border-radius:50%;
+    background:radial-gradient(circle, rgba(127,255,0,.18), transparent 62%);
+    filter:blur(48px);
+    animation:halo 4.5s ease-in-out infinite;
+  }
+  @keyframes halo{0%,100%{opacity:.5;transform:scale(1);}50%{opacity:.85;transform:scale(1.06);}}
+  .mark-ring{ /* thin ambient ring so the focal area is never empty */
+    position:absolute;inset:12%;border-radius:50%;z-index:1;
+    border:1px solid rgba(244,241,234,.06);
+    box-shadow:inset 0 0 60px rgba(127,255,0,.05);
+  }
+  .mark-video{
+    position:relative;z-index:2;
+    width:100%;height:100%;
+    object-fit:contain;
+    /* Loop is authored on a dark ground, so it melts into the --ink stage.
+       The feather mask hides any hard video edges regardless of its background. */
+    -webkit-mask:radial-gradient(circle at center, #000 58%, transparent 78%);
+            mask:radial-gradient(circle at center, #000 58%, transparent 78%);
+    filter:drop-shadow(0 22px 40px rgba(0,0,0,.55)) contrast(1.04);
+    animation:float 7s ease-in-out infinite;
+  }
+  @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+  .mark::after{ /* floor reflection */
+    content:"";position:absolute;left:16%;right:16%;bottom:0;height:13%;
+    background:radial-gradient(ellipse at center top, rgba(0,0,0,.6), transparent 70%);
+    filter:blur(7px);z-index:0;
+  }
+
+  /* --- Headline --- */
+  h1{
+    margin:0;
+    font-family:'Archivo Black',system-ui,sans-serif;letter-spacing:-.04em;
+    text-transform:uppercase;line-height:.86;
+    font-size:clamp(2.6rem,8.5vw,6.5rem);
+  }
+  h1 .acid{color:var(--acid);}
+  h1 .bone-dot{color:var(--bone);}
+
+  .subtitle{
+    max-width:36rem;margin:.4rem auto 0;
+    font-size:clamp(1rem,1.4vw,1.2rem);line-height:1.55;
+    color:rgba(244,241,234,.66);
+  }
+
+  /* --- CTA row --- */
+  .cta-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:1.1rem;margin-top:.6rem;}
+  .cta-primary{
+    display:inline-flex;align-items:center;gap:.75rem;
+    background:var(--acid);color:var(--ink);
+    font-family:'Archivo Black',sans-serif;text-transform:uppercase;
+    font-size:14px;letter-spacing:-.01em;
+    padding:.9rem 1.6rem;
+    box-shadow:4px 4px 0 var(--ink);
+    transition:transform .18s ease, box-shadow .18s ease;
+  }
+  .cta-primary:hover{transform:translate(-3px,-3px);box-shadow:7px 7px 0 var(--ink);}
+  .cta-primary svg{width:16px;height:16px;}
+
+  .cta-video{
+    display:inline-flex;align-items:center;gap:.8rem;
+    font-family:'JetBrains Mono',monospace;
+    font-size:13px;text-transform:uppercase;letter-spacing:.18em;
+    color:rgba(244,241,234,.72);
+    background:none;border:none;cursor:pointer;padding:.6rem .3rem;
+    transition:color .18s ease;
+  }
+  .cta-video:hover{color:var(--bone);}
+  .cta-video .play{
+    width:44px;height:44px;border-radius:50%;
+    border:1px solid rgba(244,241,234,.25);
+    display:flex;align-items:center;justify-content:center;
+    font-size:11px;color:var(--bone);
+    transition:background .18s ease, border-color .18s ease, transform .18s ease;
+    position:relative;
+  }
+  .cta-video:hover .play{background:rgba(255,255,255,.08);border-color:rgba(244,241,234,.6);transform:scale(1.05);}
+  .cta-video .play::after{ /* pulse ring */
+    content:"";position:absolute;inset:-1px;border-radius:50%;
+    border:1px solid var(--acid);opacity:0;
+    animation:pulse 2.6s ease-out infinite;
+  }
+  @keyframes pulse{0%{opacity:.5;transform:scale(1);}100%{opacity:0;transform:scale(1.5);}}
+
+  /* ============ BOTTOM MARQUEE ============ */
+  .marquee{
+    position:relative;z-index:15;
+    border-top:1px solid rgba(255,255,255,.1);
+    overflow:hidden;white-space:nowrap;
+    background:rgba(0,0,0,.25);
+  }
+  .marquee .track{
+    display:inline-flex;gap:0;
+    font-family:'Archivo Black',sans-serif;text-transform:uppercase;
+    font-size:12px;letter-spacing:.02em;
+    padding:.85rem 0;
+    animation:scroll 28s linear infinite;
+  }
+  .marquee .track span{padding:0 1.6rem;color:rgba(244,241,234,.55);}
+  .marquee .track span b{color:var(--acid);}
+  @keyframes scroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+
+  /* ============ VIDEO MODAL ============ */
+  #video-modal{
+    position:fixed;inset:0;z-index:60;display:none;opacity:0;
+    background:rgba(4,4,6,.86);backdrop-filter:blur(10px);
+    transition:opacity .28s ease;
+  }
+  #video-modal.open{display:block;opacity:1;}
+  .vm-wrap{
+    position:absolute;inset:0;
+    display:flex;align-items:center;justify-content:center;
+    padding:clamp(1rem,5vw,3.5rem);
+  }
+  .vm-video{
+    width:min(1100px,100%);max-height:82vh;
+    aspect-ratio:16/9;background:#000;
+    border-radius:6px;overflow:hidden;
+    box-shadow:0 40px 120px -20px rgba(0,0,0,.9), 0 0 0 1px rgba(255,255,255,.08);
+    outline:1px solid rgba(127,255,0,.0);
+  }
+  .vm-video video{width:100%;height:100%;object-fit:contain;background:#000;}
+  .vm-close{
+    position:absolute;top:20px;right:22px;z-index:2;
+    width:44px;height:44px;border-radius:50%;
+    border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.4);
+    color:#fff;font-size:20px;line-height:1;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    transition:background .18s ease,border-color .18s ease;
+  }
+  .vm-close:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.6);}
+  .vm-label{
+    position:absolute;left:24px;top:24px;z-index:2;
+    font-family:'JetBrains Mono',monospace;font-size:10px;
+    text-transform:uppercase;letter-spacing:.3em;color:rgba(244,241,234,.5);
+  }
+  .vm-label b{color:var(--acid);}
+
+  /* ============ REDUCED MOTION ============ */
+  @media(prefers-reduced-motion:reduce){
+    .ambient,.dot,.flicker,.mark-video,.mark::before,.cta-video .play::after,.marquee .track{animation:none!important;}
+  }
+</style>
+</head>
+
+<body>
+<!-- ================= HERO ================= -->
+<section class="hero ambient" id="hero">
+
+  <!-- texture layers -->
+  <div class="layer beam"></div>
+  <div class="layer grain"></div>
+  <div class="layer" id="dust-field"></div>
+  <div class="layer vignette"></div>
+
+  <!-- top meta bar -->
+  <div class="meta">
+    <div class="l">
+      <span class="dot"></span>
+      <span>Est. 2026 <span class="sep">//</span> CY · EU</span>
+    </div>
+    <div class="r">
+      <span>Drop 01</span>
+      <span class="flicker">Live · <span id="sold-counter">240</span>/500</span>
+    </div>
+  </div>
+
+  <!-- center content -->
+  <div class="content">
+    <span class="eyebrow"><span class="bar"></span>Chapter 01 — Origin</span>
+
+    <!-- the living brand mark (seamless logo loop) -->
+    <div class="mark">
+      <span class="mark-ring"></span>
+      <video class="mark-video" src="assets/logo-loop.mp4"
+             autoplay muted loop playsinline aria-hidden="true"></video>
+    </div>
+
+    <h1>
+      Built From<br><span class="acid">Nothing<span class="bone-dot">.</span></span>
+    </h1>
+
+    <p class="subtitle">
+      Three of us, one garage, no funding — just an obsession with headwear
+      that actually means something. This is where it begins.
+    </p>
+
+    <div class="cta-row">
+      <a href="#shop" class="cta-primary">
+        Shop the drop
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+      <button type="button" class="cta-video" id="open-video">
+        <span class="play">▶</span>
+        Watch the story
+      </button>
+    </div>
+  </div>
+
+  <!-- bottom marquee -->
+  <div class="marquee" aria-hidden="true">
+    <div class="track">
+      <span>Built From Nothing <b>✕</b></span><span>Handcrafted In Europe <b>✕</b></span><span>Designed In Cyprus <b>✕</b></span><span>Drop 01 · SS26 <b>✕</b></span>
+      <span>Built From Nothing <b>✕</b></span><span>Handcrafted In Europe <b>✕</b></span><span>Designed In Cyprus <b>✕</b></span><span>Drop 01 · SS26 <b>✕</b></span>
+    </div>
+  </div>
+</section>
+
+<!-- ================= VIDEO MODAL ================= -->
+<div id="video-modal" role="dialog" aria-modal="true" aria-label="Brand story video">
+  <span class="vm-label"><b>▲</b> Arte Di Strada · The Story</span>
+  <button class="vm-close" id="video-close" aria-label="Close video">×</button>
+  <div class="vm-wrap">
+    <div class="vm-video">
+      <video id="brand-video" src="assets/brand-video.mp4" playsinline controls preload="metadata"></video>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ---------- dust particles ---------- */
+  (function(){
+    var field=document.getElementById('dust-field'); if(!field) return;
+    for(var i=0;i<26;i++){
+      var p=document.createElement('div'); p.className='dust';
+      var s=1+Math.random()*2;
+      p.style.width=s+'px'; p.style.height=s+'px';
+      p.style.left=(Math.random()*100)+'%'; p.style.top=(100+Math.random()*10)+'%';
+      p.style.setProperty('--dx',(Math.random()*100-50)+'px');
+      p.style.setProperty('--dur',(18+Math.random()*18)+'s');
+      p.style.setProperty('--delay',(-Math.random()*20)+'s');
+      field.appendChild(p);
+    }
+  })();
+
+  /* ---------- live sold counter (slow drift) ---------- */
+  (function(){
+    var el=document.getElementById('sold-counter'); if(!el) return;
+    var n=240;
+    setInterval(function(){
+      if(n<498 && Math.random()>.55){ n++; el.textContent=n; }
+    }, 9000);
+  })();
+
+  /* ---------- video modal ---------- */
+  (function(){
+    var modal=document.getElementById('video-modal');
+    var openBtn=document.getElementById('open-video');
+    var closeBtn=document.getElementById('video-close');
+    var video=document.getElementById('brand-video');
+    if(!modal||!openBtn) return;
+
+    function open(){
+      modal.classList.add('open');
+      document.body.style.overflow='hidden';
+      try{ video.currentTime=0; video.play(); }catch(e){}
+    }
+    function close(){
+      modal.classList.remove('open');
+      document.body.style.overflow='';
+      try{ video.pause(); }catch(e){}
+    }
+    openBtn.addEventListener('click', open);
+    closeBtn.addEventListener('click', close);
+    modal.addEventListener('click', function(e){ if(e.target===modal||e.target.classList.contains('vm-wrap')) close(); });
+    document.addEventListener('keydown', function(e){ if(e.key==='Escape' && modal.classList.contains('open')) close(); });
+  })();
+</script>
+</body>
+</html>
