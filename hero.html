@@ -30,11 +30,19 @@
   /* ============ STAGE ============ */
   .hero{
     position:relative;
-    min-height:100svh;
+    min-height:88svh;
     overflow:hidden;
     display:flex;
     flex-direction:column;
   }
+  /* editorial corner framing — subtle premium detail */
+  .frame{position:absolute;inset:18px;z-index:16;pointer-events:none;}
+  .frame span{position:absolute;width:26px;height:26px;border:1px solid rgba(244,241,234,.14);}
+  .frame .tl{top:0;left:0;border-right:0;border-bottom:0;}
+  .frame .tr{top:0;right:0;border-left:0;border-bottom:0;}
+  .frame .bl{bottom:0;left:0;border-right:0;border-top:0;}
+  .frame .br{bottom:0;right:0;border-left:0;border-top:0;}
+  @media(max-width:720px){ .frame{inset:12px;} .frame span{width:18px;height:18px;} }
 
   /* Ambient wash background */
   @keyframes ambient{
@@ -102,24 +110,25 @@
     flex:1;
     display:flex;flex-direction:column;align-items:center;justify-content:center;
     text-align:center;
-    padding:1rem clamp(1.25rem,4vw,2.75rem) 2rem;
-    gap:clamp(.5rem,2vw,1.1rem);
+    padding:1.25rem clamp(1.25rem,4vw,2.75rem) 1.5rem;
+    gap:clamp(.3rem,1vw,.7rem);
   }
 
   .eyebrow{
     display:inline-flex;align-items:center;gap:.75rem;
     font-family:'JetBrains Mono',monospace;
-    font-size:11px;text-transform:uppercase;letter-spacing:.3em;
-    color:rgba(244,241,234,.55);
+    font-size:10.5px;text-transform:uppercase;letter-spacing:.34em;
+    color:rgba(244,241,234,.5);
   }
-  .eyebrow .bar{width:2rem;height:1px;background:var(--acid);}
+  .eyebrow .bar{width:1.75rem;height:1px;background:var(--acid);}
 
   /* --- The living mark (logo loop video) --- */
   .mark{
     position:relative;
-    width:clamp(230px,36vw,440px);
+    width:clamp(184px,23vw,300px);
     aspect-ratio:1/1;
     display:flex;align-items:center;justify-content:center;
+    margin-bottom:clamp(-1rem,-2.4vw,-2.2rem); /* tuck the headline up under the mark */
   }
   .mark::before{ /* acid halo — also the fallback focal point if the video is slow to paint */
     content:"";position:absolute;inset:4%;border-radius:50%;
@@ -153,22 +162,22 @@
 
   /* --- Headline --- */
   h1{
-    margin:0;
+    margin:0;position:relative;z-index:2;
     font-family:'Archivo Black',system-ui,sans-serif;letter-spacing:-.04em;
-    text-transform:uppercase;line-height:.86;
-    font-size:clamp(2.6rem,8.5vw,6.5rem);
+    text-transform:uppercase;line-height:.84;
+    font-size:clamp(2.3rem,7vw,5.4rem);
   }
   h1 .acid{color:var(--acid);}
   h1 .bone-dot{color:var(--bone);}
 
   .subtitle{
-    max-width:36rem;margin:.4rem auto 0;
-    font-size:clamp(1rem,1.4vw,1.2rem);line-height:1.55;
-    color:rgba(244,241,234,.66);
+    max-width:30rem;margin:.55rem auto 0;
+    font-size:clamp(.9rem,1.05vw,1.02rem);line-height:1.55;
+    color:rgba(244,241,234,.55);
   }
 
   /* --- CTA row --- */
-  .cta-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:1.1rem;margin-top:.6rem;}
+  .cta-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:1.1rem;margin-top:1rem;}
   .cta-primary{
     display:inline-flex;align-items:center;gap:.75rem;
     background:var(--acid);color:var(--ink);
@@ -276,6 +285,9 @@
   <div class="layer grain"></div>
   <div class="layer" id="dust-field"></div>
   <div class="layer vignette"></div>
+
+  <!-- editorial corner frame -->
+  <div class="frame"><span class="tl"></span><span class="tr"></span><span class="bl"></span><span class="br"></span></div>
 
   <!-- top meta bar -->
   <div class="meta">
