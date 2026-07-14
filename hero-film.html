@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ArteDiStrada — Built From Nothing</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --ink:#0a0a0b;
+    --bone:#f4f1ea;
+    --acid:#7fff00;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--ink);color:var(--bone);}
+  body{font-family:'Space Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+  a{color:inherit;text-decoration:none;}
+  img,video{display:block;max-width:100%;}
+  .font-display{font-family:'Archivo Black',system-ui,sans-serif;letter-spacing:-.04em;}
+  .font-mono{font-family:'JetBrains Mono',ui-monospace,monospace;}
+
+  /* ============ STAGE ============ */
+  .hero{position:relative;min-height:100svh;overflow:hidden;display:flex;flex-direction:column;}
+
+  /* full-bleed cinematic background film */
+  .bg-film{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;
+    filter:grayscale(.15) contrast(1.05) brightness(.72);
+    transform:scale(1.04);animation:slowzoom 26s ease-in-out infinite alternate;}
+  @keyframes slowzoom{from{transform:scale(1.04);}to{transform:scale(1.12);}}
+
+  .layer{position:absolute;inset:0;pointer-events:none;}
+  /* scrims: darken + push focus to bottom-left */
+  .scrim{
+    z-index:1;
+    background:
+      linear-gradient(to top, rgba(5,5,6,.92) 0%, rgba(5,5,6,.45) 32%, rgba(5,5,6,.15) 55%, rgba(5,5,6,.55) 100%),
+      linear-gradient(to right, rgba(5,5,6,.75) 0%, rgba(5,5,6,.25) 38%, transparent 70%);
+  }
+  .acidwash{z-index:1;background:radial-gradient(ellipse 60% 55% at 12% 92%, rgba(127,255,0,.10), transparent 60%);}
+  .grain{z-index:2;opacity:.5;
+    background-image:radial-gradient(rgba(255,255,255,.04) 1px,transparent 1px),radial-gradient(rgba(255,255,255,.025) 1px,transparent 1px);
+    background-size:3px 3px,7px 7px;background-position:0 0,1px 2px;}
+  .vignette{z-index:2;background:radial-gradient(ellipse at center, transparent 48%, rgba(0,0,0,.75) 100%);}
+
+  /* editorial corner frame */
+  .frame{position:absolute;inset:18px;z-index:6;pointer-events:none;}
+  .frame span{position:absolute;width:26px;height:26px;border:1px solid rgba(244,241,234,.16);}
+  .frame .tl{top:0;left:0;border-right:0;border-bottom:0;}
+  .frame .tr{top:0;right:0;border-left:0;border-bottom:0;}
+  .frame .bl{bottom:0;left:0;border-right:0;border-top:0;}
+  .frame .br{bottom:0;right:0;border-left:0;border-top:0;}
+
+  /* ============ TOP BAR ============ */
+  .topbar{position:relative;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:1rem;
+    padding:1.5rem clamp(1.4rem,4vw,3rem);}
+  .lockup{display:flex;align-items:center;gap:.7rem;font-family:'Archivo Black',sans-serif;text-transform:uppercase;
+    letter-spacing:.02em;font-size:15px;}
+  .lockup .dot{width:7px;height:7px;border-radius:50%;background:var(--acid);animation:blink 1.6s ease-in-out infinite;}
+  @keyframes blink{50%{opacity:.25;}}
+  .topmeta{font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.3em;
+    color:rgba(244,241,234,.5);display:flex;gap:1.4rem;}
+  .topmeta .sep{color:rgba(244,241,234,.25);}
+  @media(max-width:720px){ .topmeta{display:none;} }
+
+  /* ============ FLOATING "PLAY FILM" PILL (top-right, non-colliding) ============ */
+  .playpill{position:absolute;z-index:5;top:calc(1.5rem + 42px);right:clamp(1.4rem,4vw,3rem);
+    display:inline-flex;align-items:center;gap:.7rem;cursor:pointer;
+    background:rgba(0,0,0,.32);border:1px solid rgba(244,241,234,.18);border-radius:999px;
+    padding:.5rem .5rem .5rem 1rem;backdrop-filter:blur(4px);
+    font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.28em;
+    color:rgba(244,241,234,.75);transition:border-color .18s,color .18s,background .18s;}
+  .playpill:hover{color:var(--bone);border-color:rgba(244,241,234,.45);background:rgba(0,0,0,.5);}
+  .playpill .ic{width:30px;height:30px;border-radius:50%;background:var(--acid);color:var(--ink);
+    display:flex;align-items:center;justify-content:center;font-size:10px;position:relative;}
+  .playpill .ic::after{content:"";position:absolute;inset:-2px;border-radius:50%;border:1px solid var(--acid);
+    opacity:0;animation:pulse 2.6s ease-out infinite;}
+  @keyframes pulse{0%{opacity:.5;transform:scale(1);}100%{opacity:0;transform:scale(1.5);}}
+  @media(max-width:720px){ .playpill span.txt{display:none;} .playpill{padding:.4rem;} }
+
+  /* ============ BOTTOM-LEFT CONTENT ============ */
+  .content{position:relative;z-index:5;margin-top:auto;padding:0 clamp(1.4rem,4vw,3rem) clamp(2rem,4vw,3.4rem);max-width:920px;}
+  .kicker{display:inline-flex;align-items:center;gap:.75rem;font-family:'JetBrains Mono',monospace;
+    font-size:11px;text-transform:uppercase;letter-spacing:.32em;color:rgba(244,241,234,.6);margin-bottom:1rem;}
+  .kicker .bar{width:2rem;height:1px;background:var(--acid);}
+  h1{margin:0;font-family:'Archivo Black',system-ui,sans-serif;letter-spacing:-.04em;text-transform:uppercase;
+    line-height:.82;font-size:clamp(2.8rem,10vw,8rem);}
+  h1 .acid{color:var(--acid);}
+  h1 .bone-dot{color:var(--bone);}
+  .subline{max-width:30rem;margin:1.1rem 0 0;font-size:clamp(.92rem,1.05vw,1.05rem);line-height:1.55;color:rgba(244,241,234,.62);}
+
+  .cta-row{display:flex;flex-wrap:wrap;align-items:center;gap:1.2rem;margin-top:1.6rem;}
+  .cta-primary{display:inline-flex;align-items:center;gap:.75rem;background:var(--acid);color:var(--ink);
+    font-family:'Archivo Black',sans-serif;text-transform:uppercase;font-size:14px;letter-spacing:-.01em;
+    padding:.95rem 1.7rem;box-shadow:4px 4px 0 var(--ink);transition:transform .18s ease,box-shadow .18s ease;}
+  .cta-primary:hover{transform:translate(-3px,-3px);box-shadow:7px 7px 0 var(--ink);}
+  .cta-primary svg{width:16px;height:16px;}
+  .cta-ghost{display:inline-flex;align-items:center;gap:.7rem;font-family:'JetBrains Mono',monospace;
+    font-size:13px;text-transform:uppercase;letter-spacing:.18em;color:rgba(244,241,234,.75);
+    background:none;border:none;cursor:pointer;padding:.6rem .2rem;transition:color .18s ease;}
+  .cta-ghost:hover{color:var(--bone);}
+  .cta-ghost .ic{width:38px;height:38px;border-radius:50%;border:1px solid rgba(244,241,234,.3);
+    display:flex;align-items:center;justify-content:center;font-size:10px;transition:background .18s,border-color .18s;}
+  .cta-ghost:hover .ic{background:rgba(255,255,255,.08);border-color:rgba(244,241,234,.6);}
+
+  /* ============ VERTICAL SIDE LABELS ============ */
+  .vlabel{position:absolute;z-index:5;font-family:'JetBrains Mono',monospace;font-size:10px;
+    text-transform:uppercase;letter-spacing:.35em;color:rgba(244,241,234,.4);
+    writing-mode:vertical-rl;}
+  .vlabel.left{left:22px;bottom:clamp(2rem,4vw,3.4rem);}
+  .vlabel.right{right:22px;top:50%;transform:translateY(-50%);}
+  @media(max-width:900px){ .vlabel{display:none;} }
+
+  /* ============ BOTTOM MARQUEE ============ */
+  .marquee{position:relative;z-index:5;border-top:1px solid rgba(255,255,255,.1);overflow:hidden;white-space:nowrap;background:rgba(0,0,0,.3);}
+  .marquee .track{display:inline-flex;font-family:'Archivo Black',sans-serif;text-transform:uppercase;
+    font-size:12px;letter-spacing:.02em;padding:.8rem 0;animation:scroll 28s linear infinite;}
+  .marquee .track span{padding:0 1.6rem;color:rgba(244,241,234,.55);}
+  .marquee .track span b{color:var(--acid);}
+  @keyframes scroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+
+  /* ============ VIDEO MODAL ============ */
+  #video-modal{position:fixed;inset:0;z-index:60;display:none;opacity:0;background:rgba(4,4,6,.9);
+    backdrop-filter:blur(10px);transition:opacity .28s ease;}
+  #video-modal.open{display:block;opacity:1;}
+  .vm-wrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:clamp(1rem,5vw,3.5rem);}
+  .vm-video{width:min(1100px,100%);max-height:82vh;aspect-ratio:16/9;background:#000;border-radius:6px;overflow:hidden;
+    box-shadow:0 40px 120px -20px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.08);}
+  .vm-video video{width:100%;height:100%;object-fit:contain;background:#000;}
+  .vm-close{position:absolute;top:20px;right:22px;z-index:2;width:44px;height:44px;border-radius:50%;
+    border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.4);color:#fff;font-size:20px;line-height:1;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;transition:background .18s,border-color .18s;}
+  .vm-close:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.6);}
+  .vm-label{position:absolute;left:24px;top:24px;z-index:2;font-family:'JetBrains Mono',monospace;font-size:10px;
+    text-transform:uppercase;letter-spacing:.3em;color:rgba(244,241,234,.5);}
+  .vm-label b{color:var(--acid);}
+
+  @media(prefers-reduced-motion:reduce){
+    .bg-film,.lockup .dot,.filmcue .ring::after,.marquee .track{animation:none!important;}
+  }
+</style>
+</head>
+
+<body>
+<section class="hero" id="hero">
+
+  <!-- cinematic background film -->
+  <video class="bg-film" src="assets/brand-video.mp4" autoplay muted loop playsinline aria-hidden="true"></video>
+
+  <!-- overlays -->
+  <div class="layer scrim"></div>
+  <div class="layer acidwash"></div>
+  <div class="layer grain"></div>
+  <div class="layer vignette"></div>
+  <div class="frame"><span class="tl"></span><span class="tr"></span><span class="bl"></span><span class="br"></span></div>
+
+  <!-- top bar -->
+  <div class="topbar">
+    <div class="lockup"><span class="dot"></span>ArteDiStrada</div>
+    <div class="topmeta">
+      <span>Drop 01</span>
+      <span class="sep">//</span>
+      <span>CY · EU</span>
+      <span class="sep">//</span>
+      <span>SS26</span>
+    </div>
+  </div>
+
+  <!-- floating play-film pill -->
+  <button type="button" class="playpill" id="open-video" aria-label="Watch the film">
+    <span class="txt">Now Playing — Watch</span>
+    <span class="ic">▶</span>
+  </button>
+
+  <!-- vertical side labels -->
+  <div class="vlabel left">Est. 2026 — Cyprus</div>
+  <div class="vlabel right">Scroll to enter</div>
+
+  <!-- bottom-left content -->
+  <div class="content">
+    <span class="kicker"><span class="bar"></span>Chapter 01 — Origin</span>
+    <h1>Built From<br><span class="acid">Nothing<span class="bone-dot">.</span></span></h1>
+    <p class="subline">Friends, one garage, no funding — just an obsession with headwear that actually means something.</p>
+    <div class="cta-row">
+      <a href="#shop" class="cta-primary">Shop the drop
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+      <button type="button" class="cta-ghost" id="open-video-2">
+        <span class="ic">▶</span> Watch the full story
+      </button>
+    </div>
+  </div>
+
+  <!-- bottom marquee -->
+  <div class="marquee" aria-hidden="true">
+    <div class="track">
+      <span>Built From Nothing <b>✕</b></span><span>Handcrafted In Europe <b>✕</b></span><span>Designed In Cyprus <b>✕</b></span><span>Drop 01 · SS26 <b>✕</b></span>
+      <span>Built From Nothing <b>✕</b></span><span>Handcrafted In Europe <b>✕</b></span><span>Designed In Cyprus <b>✕</b></span><span>Drop 01 · SS26 <b>✕</b></span>
+    </div>
+  </div>
+</section>
+
+<!-- video modal -->
+<div id="video-modal" role="dialog" aria-modal="true" aria-label="Brand story video">
+  <span class="vm-label"><b>▲</b> Arte Di Strada · The Story</span>
+  <button class="vm-close" id="video-close" aria-label="Close video">×</button>
+  <div class="vm-wrap">
+    <div class="vm-video">
+      <video id="brand-video" src="assets/brand-video.mp4" playsinline controls preload="metadata"></video>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function(){
+    var modal=document.getElementById('video-modal');
+    var closeBtn=document.getElementById('video-close');
+    var video=document.getElementById('brand-video');
+    function open(){ modal.classList.add('open'); document.body.style.overflow='hidden'; try{video.currentTime=0;video.play();}catch(e){} }
+    function close(){ modal.classList.remove('open'); document.body.style.overflow=''; try{video.pause();}catch(e){} }
+    ['open-video','open-video-2'].forEach(function(id){ var b=document.getElementById(id); if(b) b.addEventListener('click',open); });
+    closeBtn.addEventListener('click',close);
+    modal.addEventListener('click',function(e){ if(e.target===modal||e.target.classList.contains('vm-wrap')) close(); });
+    document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modal.classList.contains('open')) close(); });
+  })();
+</script>
+</body>
+</html>

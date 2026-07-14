@@ -1,15 +1,25 @@
-# Hero — "The Living Mark"
+# ArteDiStrada — Hero sections (two concepts)
 
-A new, logo-forward hero section for ArteDiStrada. No product cards — the
-first thing a visitor sees is the animated brand mark glowing in the concrete
-void, the **BUILT FROM NOTHING.** headline, and a **Watch the story** button
-that opens the brand film in a cinematic modal (optional — nobody's forced to
-watch it).
+Two alternative, professional hero sections. Both keep the **BUILT FROM
+NOTHING.** headline, the brand tokens (`--ink/--bone/--acid`), and an optional
+brand-film modal — pick whichever you prefer.
+
+### Concept A — `hero.html` — "The Living Mark"
+Logo-forward and centered. The animated brand mark (logo loop) glows in the
+concrete void as the focal point; compact, editorial corner framing; **Watch
+the story** button opens the film in a cinematic modal.
+
+### Concept B — `hero-film.html` — "The Film"
+Cinematic and asymmetric. The brand film plays as a darkened full-bleed
+background (muted loop, like a fashion-film teaser); huge headline anchored
+bottom-left; vertical side labels; a floating **Now Playing — Watch** pill and
+a **Watch the full story** CTA both open the film with sound.
 
 ## Files
-- `hero.html` — the full, self-contained hero (HTML + CSS + JS in one file).
-- `assets/logo-loop.mp4` — the seamless logo loop (plays muted/looping as the centerpiece).
-- `assets/brand-video.mp4` — the story film (opens in the modal on click).
+- `hero.html` — Concept A (self-contained HTML + CSS + JS).
+- `hero-film.html` — Concept B (self-contained HTML + CSS + JS).
+- `assets/logo-loop.mp4` — the seamless logo loop (centerpiece of Concept A).
+- `assets/brand-video.mp4` — the story film (modal in both; background in Concept B).
 
 ## Preview
 Open `hero.html` in a browser. The videos load from `assets/` next to the file.
