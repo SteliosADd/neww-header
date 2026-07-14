@@ -10,10 +10,16 @@ concrete void as the focal point; compact, editorial corner framing; **Watch
 the story** button opens the film in a cinematic modal.
 
 ### Concept B — `hero-film.html` — "The Film"
-Cinematic and asymmetric. The brand film plays as a darkened full-bleed
-background (muted loop, like a fashion-film teaser); huge headline anchored
-bottom-left; vertical side labels; a floating **Now Playing — Watch** pill and
-a **Watch the full story** CTA both open the film with sound.
+Cinematic and asymmetric. The background is a **generated animated "concrete
+void"** rendered live in a `<canvas>` — drifting smoke, glowing white/acid
+embers, and a slow acid-green light wash. It loops forever with no seam, needs
+no video file, and is lightweight. Huge headline anchored bottom-left; vertical
+side labels; a floating **Now Playing — Watch** pill and a **Watch the full
+story** CTA both open the brand film (with sound) in the modal.
+
+> Want a real AI-generated cinematic clip behind it instead (e.g. the floating
+> cap in smoke, animated from your product photo)? That needs Higgsfield
+> credits — the account currently has 0. Top up and I can generate it.
 
 ## Files
 - `hero.html` — Concept A (self-contained HTML + CSS + JS).

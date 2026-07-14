@@ -26,11 +26,8 @@
   /* ============ STAGE ============ */
   .hero{position:relative;min-height:100svh;overflow:hidden;display:flex;flex-direction:column;}
 
-  /* full-bleed cinematic background film */
-  .bg-film{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;
-    filter:grayscale(.15) contrast(1.05) brightness(.72);
-    transform:scale(1.04);animation:slowzoom 26s ease-in-out infinite alternate;}
-  @keyframes slowzoom{from{transform:scale(1.04);}to{transform:scale(1.12);}}
+  /* full-bleed generated cinematic background (canvas: drifting smoke + embers + acid light) */
+  .bg-fx{position:absolute;inset:0;width:100%;height:100%;z-index:0;display:block;}
 
   .layer{position:absolute;inset:0;pointer-events:none;}
   /* scrims: darken + push focus to bottom-left */
@@ -147,8 +144,8 @@
 <body>
 <section class="hero" id="hero">
 
-  <!-- cinematic background film -->
-  <video class="bg-film" src="assets/brand-video.mp4" autoplay muted loop playsinline aria-hidden="true"></video>
+  <!-- generated cinematic background (animated concrete void: smoke + embers + acid light) -->
+  <canvas class="bg-fx" id="bgfx" aria-hidden="true"></canvas>
 
   <!-- overlays -->
   <div class="layer scrim"></div>
@@ -215,6 +212,78 @@
 </div>
 
 <script>
+  /* ---------- generated cinematic background ---------- */
+  (function(){
+    var cv=document.getElementById('bgfx'); if(!cv) return;
+    var ctx=cv.getContext('2d');
+    var reduce=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+    var dpr=Math.min(1.5, window.devicePixelRatio||1);
+    var W,H;
+    function resize(){ W=cv.width=Math.floor(innerWidth*dpr); H=cv.height=Math.floor(innerHeight*dpr);
+      cv.style.width=innerWidth+'px'; cv.style.height=innerHeight+'px'; }
+    resize(); window.addEventListener('resize', resize);
+
+    // soft radial "puff" sprite (reused for smoke + embers — fast)
+    var puff=document.createElement('canvas'); puff.width=puff.height=256;
+    var pc=puff.getContext('2d');
+    var g=pc.createRadialGradient(128,128,0,128,128,128);
+    g.addColorStop(0,'rgba(255,255,255,1)'); g.addColorStop(.4,'rgba(255,255,255,.5)'); g.addColorStop(1,'rgba(255,255,255,0)');
+    pc.fillStyle=g; pc.fillRect(0,0,256,256);
+    // acid-green glow sprite for the green embers
+    var puffA=document.createElement('canvas'); puffA.width=puffA.height=256;
+    var pca=puffA.getContext('2d');
+    var ga=pca.createRadialGradient(128,128,0,128,128,128);
+    ga.addColorStop(0,'rgba(150,255,60,1)'); ga.addColorStop(.4,'rgba(120,240,40,.45)'); ga.addColorStop(1,'rgba(120,240,40,0)');
+    pca.fillStyle=ga; pca.fillRect(0,0,256,256);
+
+    function rnd(a,b){return a+Math.random()*(b-a);}
+    var smoke=[], embers=[];
+    for(var i=0;i<20;i++) smoke.push({x:Math.random(),y:rnd(-.2,1.2),r:rnd(220,480),vx:rnd(-.012,.012),vy:rnd(-.05,-.018),a:rnd(.03,.075)});
+    for(var j=0;j<44;j++) embers.push({x:Math.random(),y:rnd(0,1.2),r:rnd(.6,2.4),vy:rnd(-.10,-.035),vx:rnd(-.01,.01),a:rnd(.15,.6),acid:Math.random()<.42,ph:Math.random()*6.28});
+
+    var sweep=0, t0=performance.now();
+    function draw(now){
+      var dt=Math.min(50, now-t0)/1000; t0=now;
+      // base
+      ctx.globalCompositeOperation='source-over'; ctx.globalAlpha=1;
+      ctx.fillStyle='#08080a'; ctx.fillRect(0,0,W,H);
+
+      // slow volumetric acid light sweep from upper area
+      sweep+=dt*0.03;
+      var sx=(0.5+0.35*Math.sin(sweep))*W, sy=0.16*H, sr=Math.max(W,H)*0.6;
+      var lg=ctx.createRadialGradient(sx,sy,0,sx,sy,sr);
+      lg.addColorStop(0,'rgba(127,255,0,0.05)'); lg.addColorStop(1,'rgba(127,255,0,0)');
+      ctx.fillStyle=lg; ctx.fillRect(0,0,W,H);
+
+      // smoke (soft grey fog)
+      ctx.globalCompositeOperation='source-over';
+      for(var i=0;i<smoke.length;i++){var s=smoke[i];
+        s.x+=s.vx*dt; s.y+=s.vy*dt;
+        if(s.y<-0.35){s.y=1.3;s.x=Math.random();}
+        if(s.x<-0.3)s.x=1.3; if(s.x>1.3)s.x=-0.3;
+        var pr=s.r*dpr; ctx.globalAlpha=s.a;
+        ctx.drawImage(puff, s.x*W-pr, s.y*H-pr, pr*2, pr*2);
+      }
+      // embers (glowing dust — white + acid)
+      ctx.globalCompositeOperation='lighter';
+      for(var k=0;k<embers.length;k++){var e=embers[k];
+        e.y+=e.vy*dt; e.x+=e.vx*dt; e.ph+=dt*2;
+        if(e.y<-0.05){e.y=1.15;e.x=Math.random();}
+        var tw=0.55+0.45*Math.sin(e.ph);
+        var pr2=e.r*6*dpr; ctx.globalAlpha=e.a*tw*0.9;
+        ctx.fillStyle=e.acid?'rgba(150,255,60,1)':'rgba(255,255,240,1)';
+        // draw tinted glow via the matching puff sprite + a small solid core
+        ctx.drawImage(e.acid?puffA:puff, e.x*W-pr2, e.y*H-pr2, pr2*2, pr2*2);
+        ctx.beginPath(); ctx.globalAlpha=Math.min(1,e.a*tw*1.4);
+        ctx.arc(e.x*W, e.y*H, e.r*dpr, 0, 6.283); ctx.fill();
+      }
+      ctx.globalAlpha=1;
+      if(!reduce) requestAnimationFrame(draw);
+    }
+    requestAnimationFrame(draw);
+  })();
+
+  /* ---------- video modal ---------- */
   (function(){
     var modal=document.getElementById('video-modal');
     var closeBtn=document.getElementById('video-close');
